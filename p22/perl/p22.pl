@@ -16,11 +16,11 @@ use warnings;
 use Carp;
 use Readonly;
 
-Readonly $ALPHABETIC_BASE => 96;
+Readonly my $ALPHABETIC_BASE => 96;
 
 use Data::Dumper;
 
-open( my $NAMES, '<', './p022_names.txt' ) or croak "Unable to read file";
+open( my $NAMES, '<', './p022_names.txt' ) or croak "Unable to read file: " . $!;
 
 my %names;
 my $position = 1;
