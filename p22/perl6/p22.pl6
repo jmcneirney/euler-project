@@ -10,4 +10,13 @@
 # 
 # What is the total of all the name scores in the file?
 
+my Int $alphabetic_base := 96;
+my $contents = "./p022_names.txt".IO.slurp;
+my @names = split(',', $contents );
+my ($counter, $total) = (1,0);
+for @names.sort -> $name {
+  $total += $name.lc.subst(/\"/,'', :g).ords.map({$_ - $alphabetic_base}).sum * $counter;
+  $counter++;
+}
+say $total;
 
