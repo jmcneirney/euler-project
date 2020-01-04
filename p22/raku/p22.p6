@@ -10,4 +10,13 @@
 # 
 # What is the total of all the name scores in the file?
 
+my @sums;
+# do something about the path
+for '../p022_names.txt'.IO.slurp.split(',').sort.pairs -> $pair {
+    # push the lower cased value (a name) having striped the "s and subtracing 96 from each
+    # chars numeric value then multiplying that by each names position in the list
+    @sums.push(($pair.key + 1) * $pair.value.lc.comb(/\w/).map( *.ord -96 ).sum );
+}
+
+say [+] @sums
 

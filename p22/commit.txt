@@ -1,2 +1,0 @@
-euler-project problem 22
-  initial commit for cpp, scala, php, perl, perl6

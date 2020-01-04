@@ -15,7 +15,6 @@ import scala.io.Source._;
 object NameToSum {
 
     def main(args:Array[String]): Unit = {
-// probablly add some exception handling all up in heres
         val names = fromFile("../p022_names.txt")
         println( "Hello " + names )
  println( "one two three" );
