@@ -19,6 +19,8 @@ use open ':std', ':encoding(UTF-8)';
 use Config::Any;
 use lib './perl/lib';
 use Problem;
+use Euler::Schema;
+use LWP::Simple;
 
 # add some logging use a nosql DB for logging
 # and mysql for something else
@@ -81,11 +83,12 @@ Readonly my %languages => %{ $config->{languages} };
 Readonly my $base_dir => './euler-project';  # You've got this in the $problem. Why is it here?
 Readonly my %comments_prefixes => %{ $config->{comments} };
 
-  #  config   => 'config.yml',
 my $problem = Problem->new({
     base_dir   => Path::Tiny->new( $base_dir ),
-    uri        => URI->new("https://projecteuler.net/problem=99"),
-    problem_id => '99',
+    uri        => URI->new("https://projecteuler.net/problem=$problem_id"),
+    problem_id => $problem_id,
+    schema     => Euler::Schema->connect('dbi:SQLite:./euler.db'),
+    user_agent => LWP::UserAgent->new(ssl_opts => { verify_hostname => 1 }),
 });
 
 my $cur_dir = getcwd();
@@ -115,7 +118,11 @@ if( -d "$cur_dir") {
             } else {
                 try {
                     $problem->language($lang);
-print STDERR "Is this the one you're calling\n";
+# HEY
+# HEY
+# Why do you have this sub here when
+# there's one in the module?
+# fix it
                     make_files({
                         path       => "$problem_dir/$lang",
                         problem_id => $problem_id,
@@ -139,10 +146,7 @@ print STDERR "Is this the one you're calling\n";
         foreach my $lang ( keys %languages ) {
         # you've got a separate directory for each language and one file per directory. Why? Helper files? I don't know that that's necessary ... idk :(
             my $problem_dir_lang = "$problem_dir/$lang";
-print "checkpoint #1\n";
             $problem->problem_dir( Path::Tiny->new($problem_dir_lang) );
-print "checkpoint #2\n";
-print Dumper( $problem );
             mkdir( $problem_dir_lang );
             chdir( $problem_dir_lang );
             try { 

@@ -2,15 +2,16 @@
 
 package Problem; # Part of it anyway
 
-use Moo;
 use Type::Tiny;
 use Path::Tiny;
 use Try::Tiny;
 use Scalar::Util qw(blessed);
 use Data::Dumper;
 use Config::Any;
-use LWP::Simple;
+use LWP::UserAgent;
 use URI;
+use Moo;
+use namespace::clean;
 
 use lib './perl/lib';
 use Euler::Schema;
@@ -81,8 +82,19 @@ has content => (
 );
 
 has user_agent => (
-    is => 'rw',
-    # more stuff
+    is  => 'ro',
+    isa => sub {
+        my $ua = shift;
+        die "Constructor requires a 'LWP::UserAgent'" unless ref($ua) eq 'LWP::UserAgent',
+    },
+);
+
+has schema => (
+    is  => 'ro',
+    isa => sub {
+        my $schema = shift;
+        die "Constructor requires a 'Euler::Schema'" unless ref($schema) eq 'Euler::Schema',
+    },
 );
 
 sub extension {
@@ -109,13 +121,12 @@ sub make_files {
     foreach my $line ( @{ $problem_contents } ) {
         say $FILE $self->comments . $line;
 # this oughta be an attribute
-        my $result = Euler::Schema->resultset('Problem');
+        my $result = $self->schema->resultset('Problem');
         my $whathappened = $result->create({
             name => 'entry from Problem',
             text => 'lkjasdlfjasdlkfjalsdjkflasjdflajsdlfkajsdlfkjalskdjflakds',
             solution => '234432',
         });
-print STDERR Data::Dumper->Dump([$whathappened],[qw(resultset)]);
     }
     close( $FILE );
     return;
@@ -127,9 +138,9 @@ sub fetch_problem {
     my $params = shift; 
     my $url = "https://projecteuler.net/problem=" . $self->problem_id;
 
-    my $ua = LWP::UserAgent->new(ssl_opts => { verify_hostname => 1 });
-    $self->content( $ua->get($url) );
-    
+# What not just have a method that gets the content?
+    $self->content( $self->user_agent->get($url) );
+
     return $self->_parse_problem();
 }
 
@@ -137,7 +148,7 @@ sub _parse_problem {
     my $self = shift; 
 
     my $tree = HTML::TreeBuilder->new;
-#print STDERR Dumper( $self->content );
+print STDERR Dumper( $self->content );
     $tree->parse( $self->content ); 
     my $problem_title   = $tree->look_down( '_tag' => 'h2' )->as_text;
     
