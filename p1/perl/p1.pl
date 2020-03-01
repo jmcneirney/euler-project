@@ -1,20 +1,21 @@
-# If we list all the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6 and 9. The sum of these multiples is 23.
-# Find the sum of all the multiples of 3 or 5 below 1000.
+# If we list all the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6 and 9. 
+# The sum of these multiples is 23. Find the sum of all the multiples of 3 or 5 below 1000.
 
-#!/usr/bin/env perl
+use List::Util qw(sum);
 
-use strict;
-use warnings;
-use v5.16;
-use Readonly;
+my @list = (1..1000);
 
-Readonly my $max => 1000;
+my $sum1 = sum( grep {($_ % 3 == 0 || $_ % 5 == 0) && $_ < 1000} @list ) . "\n";
 
-my $sum;
-foreach my $num ( 3 .. $max -1 ) {
-    next unless $num % 3 == 0 || $num % 5 == 0;
-    $sum += $num;
+# Or, alternatively w/o List::Util
+my @list_3_5 =  grep {($_ % 3 == 0 || $_ % 5 == 0) && $_ < 1000} @list;
+my $sum2;
+foreach my $add_me ( @list_3_5 ) {
+    $sum2 += $add_me;
 }
 
-say $sum;
+# or
+my $sum3;
+map { $sum3 += $_ } grep {($_ % 3 == 0 || $_ % 5 == 0) && $_ < 1000} @list;
+print "$sum3\n" if( ($sum1 == $sum2) && ( $sum2 == $sum3 ) );
 
