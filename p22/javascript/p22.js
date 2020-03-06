@@ -21,14 +21,14 @@ let sums = names.split(',').sort().map(
         return temp;
     }
  ).map(
-    (z) => {  // sum the numeric value for each name
-        return z.reduce( (a,b) => { 
+    (char_to_nums) => {  // sum the numeric value for each name
+        return char_to_nums.reduce( (a,b) => { 
             return a + b
         } )
     }
  ).map(
-    (a,b) => {   // multiply the name value by it's position in the list
-        return a * (b+1)
+    (name_sum,position) => {   // multiply the name value by it's position in the list
+        return name_sum * (position + 1) // position is the array index
     }
  ).reduce(
     (a,b) => {
