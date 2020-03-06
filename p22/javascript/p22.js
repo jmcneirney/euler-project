@@ -14,7 +14,6 @@ const fs = require('fs');
 
 let names = fs.readFileSync('./p022_names.txt', 'utf8');
 
-//let names = '"JOE","AUBREY","OWEN","COLIN","RAGHUNATH","BRIAN"';
 let sums = names.split(',').sort().map(
     (name) => {
         // remove double quotes before getting the ordinal value then subtract 64
