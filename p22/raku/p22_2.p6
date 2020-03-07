@@ -15,18 +15,23 @@ my $names = "../p022_names.txt".IO.slurp;
 
 say $names.split(',').Array.sort
     .map( -> Str $name {
+           # for each name - split on empty string - remove "s
+           # comb(/\w/) words only - i.e. remove double quotes
            $name.split('').comb(/\w/).map(
                -> Str $char --> Int { $char.ord - 64 } 
            )
          }
      )
     .map( -> Seq $list --> Int { 
+             # sum the ordinal char values for each name
              $list.Array.reduce(
                 -> Int $x, Int $y --> Int { $x + $y }
              )
          }
      )
     .pairs.map( -> Pair $x --> Int {
+            # pairs returns the element from the list
+            # with its index
             ($x.key +1) * $x.value 
         }
      )
@@ -34,3 +39,4 @@ say $names.split(',').Array.sort
          $x + $y
      } );
 
+# This appears to be a good bit slower than p22.p6
