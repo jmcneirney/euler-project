@@ -11,9 +11,9 @@
 # What is the total of all the name scores in the file?
 
 
-my $names = "../p022_names.txt".IO.slurp;
-
-say $names.split(',').Array.sort
+my $names = "./p022_names.txt".IO.slurp;
+#$names ~~ s:g/\"//;
+say $names.split(',').sort
     .map( -> Str $name {
            # for each name - split on empty string - remove "s
            # comb(/\w/) words only - i.e. remove double quotes
@@ -24,7 +24,7 @@ say $names.split(',').Array.sort
      )
     .map( -> Seq $list --> Int { 
              # sum the ordinal char values for each name
-             $list.Array.reduce(
+             $list.reduce(
                 -> Int $x, Int $y --> Int { $x + $y }
              )
          }
