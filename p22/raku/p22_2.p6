@@ -12,12 +12,11 @@
 
 
 my $names = "./p022_names.txt".IO.slurp;
-#$names ~~ s:g/\"//;
 say $names.split(',').sort
     .map( -> Str $name {
            # for each name - split on empty string - remove "s
            # comb(/\w/) words only - i.e. remove double quotes
-           $name.split('').comb(/\w/).map(
+           $name.comb(/\w/).map(
                -> Str $char --> Int { $char.ord - 64 } 
            )
          }
