@@ -11,7 +11,7 @@
 # What is the total of all the name scores in the file?
 
 
-my $names = "./p022_names.txt".IO.slurp;
+my $names = "../p022_names.txt".IO.slurp;
 say $names.split(',').sort
     .map( -> Str $name {
            # for each name - split on empty string - remove "s
