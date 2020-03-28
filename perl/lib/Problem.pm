@@ -116,7 +116,7 @@ sub comments {
 sub make_files {
     my $self = shift;
 
-    my $file = $self->problem_dir . "/problem_" . $self->problem_id . $self->extension;
+    my $file = $self->problem_dir . "/p" . $self->problem_id . $self->extension;
     open( my $FILE, '>', $file )
             or die "Unable to create problem file for " . $self->language . ' ' . $!;
 
