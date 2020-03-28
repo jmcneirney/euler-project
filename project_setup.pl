@@ -125,11 +125,12 @@ if( -d "$cur_dir") {
                 } catch {
                     carp "Error making $lang file for problem $problem_id\n";
                     $too_many_failures++;
-                } finally {
-                    if( $too_many_failures > scalar( @{ keys %languages }) ) {
-                        croak "Unable to create files.\n Aborting ...\n";
-                    }
-                };
+                }
+#                finally {
+#                    if( $too_many_failures > scalar( @{ keys %languages }) ) {
+#                        croak "Unable to create files.\n Aborting ...\n";
+#                    }
+#                };
             }
         }
     } else {
