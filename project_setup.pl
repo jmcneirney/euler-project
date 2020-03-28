@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use v5.30;
+use v5.30;  # why are you requiring this
 
 use Data::Dumper;
 use LWP::Simple qw(get);     # hows bout using http::tiny or at least look into using something
@@ -10,7 +10,7 @@ use HTML::TreeBuilder;       # that allows you to use dependency injection. So t
 use Scalar::Util qw(blessed);# use AnyEvent::Http or http::tiny of something like that.
 use Pod::Usage;              # Note that doing this is just to do it not because it's the best way. 
 use Readonly;                # AnyEvent::HTTP isn't oop either ...
-use Cwd;
+use Cwd qw(abs_path getcwd);
 use Getopt::Long;
 use Carp;
 use Try::Tiny;
@@ -85,9 +85,10 @@ Readonly my %comments_prefixes => %{ $config->{comments} };
 
 my $problem = Problem->new({
     base_dir   => Path::Tiny->new( $base_dir ),
-    uri        => URI->new("https://projecteuler.net/problem=$problem_id"),
+    uri        => URI->new("https://projecteuler.net/problem="),
     problem_id => $problem_id,
-    schema     => Euler::Schema->connect('dbi:SQLite:./euler.db'),
+    schema     => ( -e 'euler.db' ) ?
+        Euler::Schema->connect('dbi:SQLite:dbname=' . abs_path() . '/euler.db') : (),
     user_agent => LWP::UserAgent->new(ssl_opts => { verify_hostname => 1 }),
 });
 
@@ -99,8 +100,7 @@ my $cur_dir = getcwd();
 # base directory == 'euler-project'
 if( -d "$cur_dir") {
     say 'Project exists';
-    my $problem_dir = "$cur_dir/" . $problem->problem_id;
-# you should really be using file::find for this I think
+    my $problem_dir = "$cur_dir/p" . $problem->problem_id;
     if( -d $problem_dir ) {
         say "problem exists";
         my $problem_contents = $problem->fetch_problem();
@@ -118,12 +118,7 @@ if( -d "$cur_dir") {
             } else {
                 try {
                     $problem->language($lang);
-# HEY
-# HEY
-# Why do you have this sub here when
-# there's one in the module?
-# fix it
-                    make_files({
+                    $problem->make_files({
                         path       => "$problem_dir/$lang",
                         problem_id => $problem_id,
                     });
@@ -139,12 +134,21 @@ if( -d "$cur_dir") {
         }
     } else {
         say "Problem doesn't exist";
+
+        if( $problem->schema ) {
+            my $result = $problem->schema->resultset('Problem');
+            my $insert = $result->create({
+               name => 'Problem ' . $problem->problem_id,
+               text => 'lkjasdlfjasdlkfjalsdjkflasjdflajsdlfkajsdlfkjalskdjflakds',
+               solution => '234432',
+            });
+        }
+
         my $problem_dir = "$cur_dir/p$problem_id";
         mkdir( $problem_dir );
         chdir( $problem_dir );
         my $too_many_failures = 0;
         foreach my $lang ( keys %languages ) {
-        # you've got a separate directory for each language and one file per directory. Why? Helper files? I don't know that that's necessary ... idk :(
             my $problem_dir_lang = "$problem_dir/$lang";
             $problem->problem_dir( Path::Tiny->new($problem_dir_lang) );
             mkdir( $problem_dir_lang );
@@ -179,7 +183,6 @@ if( -d "$cur_dir") {
 ############ same as up there ^ ####################
 my $problem_dir;
         foreach my $lang ( keys %languages ) {
-        # you've got a separate directory for each language and one file per directory. Why? Helper files? I don't know that that's necessary ... idk :(
             my $problem_dir_lang = "$problem_dir/$lang";
             mkdir( $problem_dir_lang );
             chdir( $problem_dir_lang );
@@ -189,69 +192,16 @@ my $problem_dir;
             chdir('..');
         }
 ####################################################
-    }
-}
 
-say getcwd();
-
-exit;
-
-#my $file = find( sub { print "$File::Find::name\n" if $_ =~ /\.pm/ }, './' );
-
-# probably ought to check to see if making the http request is necessary before
-# actually doing it. Also, check to see if one of the others has already been
-# created
-
-sub make_files {
-    my $params = shift;
-    my $path       = $params->{path};
-    my $problem_id = $params->{problem_id};
-    my $lang       = $params->{lang};
-
-    open( my $FILE, '>', "$path/problem_$problem_id.$languages{$lang}" )
-            or die "Unable to create problem file for $lang " . $!;
-    my $problem_contents = fetch_problem({ problem_id => $problem_id });
-    foreach my $line ( @{ $problem_contents } ) {
-        say $FILE "$comments_prefixes{$lang} $line";
-    }
-    close( $FILE );
-    return;
-}
-
-sub fetch_problem {
-    my $params = shift; 
-    my $url = "https://projecteuler.net/problem=$params->{problem_id}";
-    my $html = get($url);
-    
-    my $tree = HTML::TreeBuilder->new;
-    $tree->parse( $html ); 
-    
-    my $problem_title   = $tree->look_down( '_tag' => 'h2' )->as_text;
-    
-    my $problem_name    = $tree->look_down( 'id' => 'problem_info' )->look_down( '_tag' => 'h3' )->content->[0];
-    my $problem_content = $tree->look_down( 'id' => 'problem_info' )
-                               ->parent
-                               ->look_down( 'class' => 'problem_content' )
-                               ->content;
-
-# maybe just dump the problem into a file for now until you figure out how to 
-# work with different elements.
-    # the following is only going to work for 'p' attr
-    # Y'alls goina need to cycle through everything I guess
-    my @problem_text = ();
-    foreach my $elem ( @{ $problem_content } ) {
-        # if elem isa something do X else do Y
-        if( blessed( $elem ) ) {        #### HEY!!! HEY!!! WHERE IS blessed?? scalar::util I believe
-            for( $elem->tag ) {
-# make this work for non p tags
-                if( /p/ ) {
-                    push @problem_text, $elem->as_text;
-                }
-                if( /ul/ ) {
-                   # call some sub that does stuff
-                }
-            }
+        if( $problem->schema ) {
+            my $result = $problem->schema->resultset('Problem');
+            my $insert = $result->create({
+               name => 'Problem ' . $problem->problem_id,
+               text => 'lkjasdlfjasdlkfjalsdjkflasjdflajsdlfkajsdlfkjalskdjflakds',
+               solution => '234432',
+            });
         }
+
     }
-    return \@problem_text;
 }
+

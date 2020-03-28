@@ -2,6 +2,8 @@
 
 package Problem; # Part of it anyway
 
+use v5.30;
+
 use Type::Tiny;
 use Path::Tiny;
 use Try::Tiny;
@@ -10,6 +12,8 @@ use Data::Dumper;
 use Config::Any;
 use LWP::UserAgent;
 use URI;
+use Carp;
+
 use Moo;
 use namespace::clean;
 
@@ -28,16 +32,13 @@ my $URI = "Type::Tiny"->new(
     message    => sub { "$_ doesn't look like a uri to me. What's up?" }
 );
 
-# sub BUILDARGS {
-#    print Dumper( \@_ );
-#    return \%{$_[0]};
-# }
-
 # add something so that if the user select from and to on the command line 
 # the problems are retrieved asyncronously
 #use HTTP::Async;    #?  which one?
 #use AnyEvent::HTTP; #?  So many choices!!
 
+# Looks like you're not passing this in
+# Should you be?
 has config => (
     is       => 'ro',
 #    isa      => 'HashRef',
@@ -50,6 +51,11 @@ has config => (
              }
         )->{'config.yml'};
     },
+);
+
+has uri => (
+    is  => 'rw',
+    isa => $URI,
 );
 
 # try coercing these from strings /path/to/dir => Path::Tiny obj
@@ -73,10 +79,6 @@ has language => (
     is => 'rw',
 );
 
-has url => (   # seems like you're going to be creating a new problem for each one.
-    is => 'rw',  # does that make sense?
-);
-
 has content => (
     is => 'rw',
 );
@@ -93,7 +95,8 @@ has schema => (
     is  => 'ro',
     isa => sub {
         my $schema = shift;
-        die "Constructor requires a 'Euler::Schema'" unless ref($schema) eq 'Euler::Schema',
+        # Don't require this. Just don't use it if it's not there.
+        carp "Constructor requires a 'Euler::Schema'" unless ref($schema) eq 'Euler::Schema',
     },
 );
 
@@ -120,15 +123,10 @@ sub make_files {
     my $problem_contents = $self->fetch_problem();
     foreach my $line ( @{ $problem_contents } ) {
         say $FILE $self->comments . $line;
-# this oughta be an attribute
-        my $result = $self->schema->resultset('Problem');
-        my $whathappened = $result->create({
-            name => 'entry from Problem',
-            text => 'lkjasdlfjasdlkfjalsdjkflasjdflajsdlfkajsdlfkjalskdjflakds',
-            solution => '234432',
-        });
+# this oughta be an attribute - what's "this"?
     }
     close( $FILE );
+
     return;
 }
 
@@ -136,7 +134,7 @@ sub fetch_problem {
     my $self = shift;
 
     my $params = shift; 
-    my $url = "https://projecteuler.net/problem=" . $self->problem_id;
+    my $url = $self->uri . $self->problem_id;
 
 # What not just have a method that gets the content?
     $self->content( $self->user_agent->get($url) );
@@ -148,18 +146,19 @@ sub _parse_problem {
     my $self = shift; 
 
     my $tree = HTML::TreeBuilder->new;
-print STDERR Dumper( $self->content );
-    $tree->parse( $self->content ); 
+    $tree->parse( $self->content->content ); 
     my $problem_title   = $tree->look_down( '_tag' => 'h2' )->as_text;
     
     my $problem_name    = $tree->look_down( 'id' => 'problem_info' )->look_down( '_tag' => 'h3' )->content->[0];
+
+    # this contains the content which could be one or more <p> elements (probably other stuff too)
+    #
     my $problem_content = $tree->look_down( 'id' => 'problem_info' )
                                ->parent
                                ->look_down( 'class' => 'problem_content' )
                                ->content;
 
     # the following is only going to work for 'p' attr
-    # Y'alls goina need to cycle through everything I guess
     my @problem_text = ();
     foreach my $elem ( @{ $problem_content } ) {
         # if elem isa something do X else do Y
