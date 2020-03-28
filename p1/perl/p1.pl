@@ -2,6 +2,9 @@
 # The sum of these multiples is 23. Find the sum of all the multiples of 3 or 5 below 1000.
 
 use List::Util qw(sum);
+use strict;
+use warnings;
+
 my $less_than_val = 1000;
 
 my @list = (1..$less_than_val);
