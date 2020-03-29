@@ -11,8 +11,7 @@
 # faster but still slow ( < 5 sec )
 
 my @pals;
-for [1..1_000_000] -> $x {
-    next if $x !%% 2 == 0;
+for (1,3 ... 1_000_000) -> $x {
     next unless $x == $x.flip; # 12321 == 12321
     next unless $x.base(2) == $x.base(2).flip; # 10101 == 10101
     @pals.push($x);
