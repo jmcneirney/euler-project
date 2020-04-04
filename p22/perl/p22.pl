@@ -10,7 +10,6 @@
 # 
 # What is the total of all the name scores in the file?
 
-use v5.26;
 use strict;
 use warnings;
 use Carp;
@@ -34,4 +33,5 @@ my $total;
 foreach my $name_val ( values %names ) {
     $total += $name_val;
 }
-say $total;
+
+print "$total\n";
