@@ -18,7 +18,7 @@ import Data.List
 import Data.Char
 
 main = do
-    handle <- openFile "../p022_names.txt" ReadMode
+    handle <- openFile "./p022_names.txt" ReadMode
     contents <- hGetContents handle
 
     let names = splitOn(",") contents

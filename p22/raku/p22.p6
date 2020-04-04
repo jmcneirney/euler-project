@@ -9,7 +9,7 @@
 
 my @sums;
 # do something about the path - currently this will only work the file is run from the current directory
-for '../p022_names.txt'.IO.slurp.split(',').sort.pairs -> $pair {
+for './p022_names.txt'.IO.slurp.split(',').sort.pairs -> $pair {
     # push the lower cased value (a name) having striped the "s and subtracing 96 from each
     # chars numeric value then multiplying that by each names position in the list
     @sums.push(($pair.key + 1) * $pair.value.lc.comb(/\w/).map( *.ord -96 ).sum );
