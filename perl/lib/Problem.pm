@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package Problem; # Part of it anyway
+package Problem;
 
 use v5.30;
 

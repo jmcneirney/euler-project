@@ -14,7 +14,6 @@ use Cwd qw(abs_path getcwd);
 use Getopt::Long;
 use Carp;
 use Try::Tiny;
-use Role::Tiny::With;
 use open ':std', ':encoding(UTF-8)';
 use Config::Any;
 use lib './perl/lib';
@@ -68,6 +67,8 @@ my $config = Config::Any->load_files(
      }
 )->{'config.yml'};
 
+# Probably ought die if config.yml isn't there
+# Make sure it's in the repo
 
 # 1) result checker -not in this file
 # Add a result checker that would require you to login to euler-project.org(com|net) and check the result
@@ -80,7 +81,7 @@ my $config = Config::Any->load_files(
 
 
 Readonly my %languages => %{ $config->{languages} };
-Readonly my $base_dir => './euler-project';  # You've got this in the $problem. Why is it here?
+Readonly my $base_dir => './euler-project';
 Readonly my %comments_prefixes => %{ $config->{comments} };
 
 my $problem = Problem->new({
